@@ -70,7 +70,7 @@ curl -s 'http://localhost:8000/products/the_odyssey' | jq .
 
 #Test: Delete the product by product id
 echo "=============Deleting product by product id ==========="
-curl -s 'http://localhost:8000/delete/product/the_odyssey' | jq -r
+curl -s -X DELETE 'http://localhost:8000/delete/product/the_odyssey' | jq -r
 
 # Test: Get all available products 
 echo "=== Getting all products ==="
