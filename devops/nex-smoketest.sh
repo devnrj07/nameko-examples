@@ -55,3 +55,23 @@ ID=$(echo ${ORDER_ID} | jq '.id')
 # Test: Get Order back
 echo "=== Getting Order ==="
 curl -s "http://localhost:8000/orders/${ID}" | jq -r
+
+#Test: Delete Order with order_id
+echo "====Deleting OrderDetails ======="
+curl -s -X DELETE "http://localhost:8000/delete/order/${ID}" | jq -r
+
+#Test: check the order after deletion
+echo "=== Getting Order ==="
+curl -s "http://localhost:8000/orders/${ID}" | jq -r
+
+# Test: Get Product to check the stock
+echo "=== Getting product id: the_odyssey and checking the stock ==="
+curl -s 'http://localhost:8000/products/the_odyssey' | jq .
+
+#Test: Delete the product by product id
+echo "=============Deleting product by product id ==========="
+curl -s 'http://localhost:8000/delete/product/the_odyssey' | jq -r
+
+# Test: Get all available products 
+echo "=== Getting all products ==="
+curl -s 'http://localhost:8000/products' | jq .

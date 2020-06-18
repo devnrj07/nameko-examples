@@ -30,8 +30,21 @@ class ProductsService:
         product = schemas.Product(strict=True).load(product).data
         self.storage.create(product)
 
+    @rpc
+    def delete_product(self,product_id):
+         result = self.storage.delete(product_id)
+         return result   
+
+
+
     @event_handler('orders', 'order_created')
     def handle_order_created(self, payload):
         for product in payload['order']['order_details']:
             self.storage.decrement_stock(
                 product['product_id'], product['quantity'])
+
+    @event_handler('orders', 'order_deleted')
+    def handle_order_deleted(self, payload):
+         product = payload['order']
+         self.storage.increment_stock(
+            product['product_id'], product['quantity'])       

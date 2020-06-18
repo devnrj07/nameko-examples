@@ -292,3 +292,22 @@ class TestCreateOrder(object):
         assert response.status_code == 404
         assert response.json()['error'] == 'PRODUCT_NOT_FOUND'
         assert response.json()['message'] == 'Product Id unknown'
+
+class TestDeleteOrder(object):
+
+    def test_can_delete_order(self, gateway_service, web_session):
+        gateway_service.orders_rpc.delete_order.return_value = True
+
+        # call the gateway service to get order #1
+        response = web_session.get('/delete/order/1')
+        assert response.status_code == 200
+
+        expected_response = {
+            "message":"order with id $1 deleted"
+        }
+
+        assert expected_response == response.json()
+
+        # check dependencies called as expected
+        assert [call()] == gateway_service.orders_rpc.delete_order.call_args_list
+        

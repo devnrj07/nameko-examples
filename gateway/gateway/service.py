@@ -34,6 +34,18 @@ class GatewayService(object):
             mimetype='application/json'
         )
 
+
+    @http(
+        "GET", "/products", expected_exceptions=ProductNotFound
+    )
+    def get_all_products(self, request):
+        # Retrieve all products from the products service
+        product_map = {prod['id']: prod for prod in self.products_rpc.list()}
+        return Response(
+            json.dumps(product_map),
+             mimetype='application/json'
+        )
+
     @http(
         "POST", "/products",
         expected_exceptions=(ValidationError, BadRequest)
@@ -74,6 +86,16 @@ class GatewayService(object):
             json.dumps({'id': product_data['id']}), mimetype='application/json'
         )
 
+    @http('DELETE', '/delete/product/<string:product_id>',
+          expected_exceptions=OrderNotFound)
+    def delete_product(self, request, product_id):
+
+        self.products_rpc.delete_product(product_id)
+        return Response(
+            json.dumps({'message': f'product with id ${product_id} deleted'}),
+             mimetype='application/json'
+        )
+
     @http("GET", "/orders/<int:order_id>", expected_exceptions=OrderNotFound)
     def get_order(self, request, order_id):
         """Gets the order details for the order given by `order_id`.
@@ -85,6 +107,22 @@ class GatewayService(object):
         return Response(
             GetOrderSchema().dumps(order).data,
             mimetype='application/json'
+        )
+
+    @http('DELETE', '/delete/order/<int:order_id>',
+          expected_exceptions=OrderNotFound)
+    def delete_order(self, request, order_id):
+
+        result = self.orders_rpc.delete_order(order_id)
+
+        if result == True:
+            return Response(
+                json.dumps({'message': f'order with id ${order_id} deleted'})
+            )
+
+        return Response(
+            json.dumps({'message': 'failed to delete the order'}),
+             mimetype='application/json'
         )
 
     def _get_order(self, order_id):

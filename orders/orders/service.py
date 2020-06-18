@@ -4,7 +4,7 @@ from nameko_sqlalchemy import DatabaseSession
 
 from orders.exceptions import NotFound
 from orders.models import DeclarativeBase, Order, OrderDetail
-from orders.schemas import OrderSchema
+from orders.schemas import OrderSchema, OrderDetailSchema
 
 
 class OrdersService:
@@ -63,6 +63,20 @@ class OrdersService:
 
     @rpc
     def delete_order(self, order_id):
-        order = self.db.query(Order).get(order_id)
-        self.db.delete(order)
+        orderDetails = self.db.query(OrderDetail).get(order_id)
+        
+        if not orderDetails:
+            raise NotFound('Order with id {} not found'.format(order_id))
+            return False
+        
+        order_details = OrderDetailSchema().dump(orderDetails).data
+        self.event_dispatcher('order_deleted', {
+            'order': order_details
+        })
+
+        self.db.delete(orderDetails)
         self.db.commit()
+        return True
+   
+    
+

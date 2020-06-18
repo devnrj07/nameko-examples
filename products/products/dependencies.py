@@ -53,9 +53,28 @@ class StorageWrapper:
             self._format_key(product['id']),
             product)
 
+    def increment_stock(self, product_id, amount):
+        return self.client.hincrby(
+            self._format_key(product_id), 'in_stock', amount)
+
     def decrement_stock(self, product_id, amount):
         return self.client.hincrby(
             self._format_key(product_id), 'in_stock', -amount)
+
+
+    def delete(self,product_id):
+        key = self._format_key(product_id)
+        hashname =''
+        product = self.client.hgetall(self._format_key(product_id))
+
+        if not product:
+            raise NotFound('Product ID {} does not exist'.format(product_id))
+        else:
+            hashname = self._from_hash(product)
+        #unpacking dictionary with * to get all the keys to delete
+        self.client.hdel(key, *hashname)
+        return True
+
 
 
 class Storage(DependencyProvider):
